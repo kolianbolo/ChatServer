@@ -36,11 +36,11 @@ public class MessageEntity implements Serializable {
     @Column(name = "status")
     private Short status;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "sender", insertable = false, updatable = false)
     private UserEntity senderEntity;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "recipient", insertable = false, updatable = false)
     private UserEntity recipientEntity;
 

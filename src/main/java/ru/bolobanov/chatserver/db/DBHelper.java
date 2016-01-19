@@ -25,6 +25,7 @@ public class DBHelper {
             return usersList.get(0);
         }
         session.getTransaction().commit();
+        session.close();
         return null;
     }
 
@@ -34,6 +35,7 @@ public class DBHelper {
         List<UserEntity> usersList = session.createCriteria(UserEntity.class)
                 .list();
         session.getTransaction().commit();
+        session.close();
         return usersList;
     }
 
@@ -47,6 +49,7 @@ public class DBHelper {
             return sessionsList.get(0);
         }
         session.getTransaction().commit();
+        session.close();
         return null;
     }
 
@@ -59,6 +62,7 @@ public class DBHelper {
             session.delete(sessionEntity);
         }
         session.getTransaction().commit();
+        session.close();
     }
 
     public void saveSession(UserEntity pUser, String pUUID) {
@@ -71,6 +75,7 @@ public class DBHelper {
         sessionEntity.setUser(pUser.getId());
         session.save(sessionEntity);
         session.getTransaction().commit();
+        session.close();
     }
 
     public List<MessageEntity> getMessages(UserEntity recipient) {
@@ -81,6 +86,7 @@ public class DBHelper {
                 .add(Restrictions.eq("status", MessageEntity.STATUS_NOT_SENDED))
                 .list();
         session.getTransaction().commit();
+        session.close();
         return messagesList;
     }
 
@@ -95,6 +101,7 @@ public class DBHelper {
                     .executeUpdate();
         }
         session.getTransaction().commit();
+        session.close();
     }
 
     public long saveMessage(String message, int sender, int recipient) {
@@ -109,6 +116,7 @@ public class DBHelper {
         messageEntity.setStatus(MessageEntity.STATUS_NOT_SENDED);
         session.save(messageEntity);
         session.getTransaction().commit();
+        session.close();
         return aDate.getTime();
     }
 

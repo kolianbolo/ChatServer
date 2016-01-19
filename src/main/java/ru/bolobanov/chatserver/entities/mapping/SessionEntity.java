@@ -27,7 +27,7 @@ public class SessionEntity implements Serializable {
     @Column(name = "timestamp")
     private Date timestamp;
 
-    @OneToOne( fetch = FetchType.LAZY )
+    @OneToOne( fetch = FetchType.EAGER )
     @JoinColumn( name = "user", insertable = false, updatable = false )
     private UserEntity userEntity;
 
