@@ -1,9 +1,11 @@
 package ru.bolobanov.chatserver.services;
 
+import org.hibernate.Session;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import ru.bolobanov.chatserver.db.DBHelper;
+import ru.bolobanov.chatserver.db.HibernateUtil;
 import ru.bolobanov.chatserver.entities.mapping.UserEntity;
 
 import javax.ws.rs.Consumes;
@@ -25,8 +27,9 @@ public class UsersService {
     public Response sendUsers() {
         JSONObject returned = new JSONObject();
         DBHelper dbHelper = new DBHelper();
+        Session session = HibernateUtil.getSessionFactory().openSession();
         try {
-            List<UserEntity> usersList = dbHelper.getAllUsers();
+            List<UserEntity> usersList = dbHelper.getAllUsers(session);
             JSONArray usersArray = new JSONArray();
             for (UserEntity userEntity : usersList) {
                 JSONObject nodeJson = new JSONObject();
@@ -36,6 +39,8 @@ public class UsersService {
             returned.put("users", usersArray);
         } catch (JSONException e) {
             e.printStackTrace();
+        } finally {
+            session.close();
         }
         return Response.status(200).entity(returned.toString()).build();
     }

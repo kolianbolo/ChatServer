@@ -1,9 +1,11 @@
 package ru.bolobanov.chatserver.services;
 
+import org.hibernate.Session;
 import org.json.JSONException;
 import org.json.JSONObject;
 import ru.bolobanov.chatserver.ErrorMessages;
 import ru.bolobanov.chatserver.db.DBHelper;
+import ru.bolobanov.chatserver.db.HibernateUtil;
 import ru.bolobanov.chatserver.entities.mapping.UserEntity;
 import ru.bolobanov.chatserver.entities.request.LoginEntity;
 
@@ -24,6 +26,7 @@ public class LoginService {
     public Response login(LoginEntity login) {
         JSONObject returned = new JSONObject();
         DBHelper dbHelper = new DBHelper();
+        Session session = HibernateUtil.getSessionFactory().openSession();
         try {
             if ((login.getLogin() == null) || login.getLogin().isEmpty()) {
                 returned.put(ErrorMessages.ERROR_CODE, ErrorMessages.INCORRECT_REQUEST);
@@ -31,14 +34,14 @@ public class LoginService {
                 return Response.status(200).entity(returned.toString()).build();
             }
 
-            UserEntity userEntity = dbHelper.getUser(login.getLogin());
+            UserEntity userEntity = dbHelper.getUser(session, login.getLogin());
 
             if (userEntity == null || !userEntity.getPassword().equals(login.getPassword())) {
                 returned.put(ErrorMessages.ERROR_CODE, ErrorMessages.INCORRECT_PASSWORD);
                 returned.put(ErrorMessages.ERROR_MESSAGE, ErrorMessages.messages.get(ErrorMessages.INCORRECT_PASSWORD));
                 return Response.status(200).entity(returned.toString()).build();
             }
-            String sessionUUID = createSession(userEntity, dbHelper);
+            String sessionUUID = createSession(session, userEntity, dbHelper);
             JSONObject userJSON = new JSONObject();
             if (sessionUUID != null) {
                 userJSON.put("login", userEntity.getName());
@@ -50,15 +53,17 @@ public class LoginService {
 
         } catch (JSONException e) {
             e.printStackTrace();
+        }finally {
+            session.close();
         }
         return Response.status(200).entity(returned.toString()).build();
     }
 
 
-    private String createSession(UserEntity userEntity, DBHelper dbHelper) {
+    private String createSession(Session pSession, UserEntity userEntity, DBHelper dbHelper) {
         String sessionUUID = UUID.randomUUID().toString();
-        dbHelper.deleteSession(userEntity);
-        dbHelper.saveSession(userEntity, sessionUUID);
+        dbHelper.deleteSession(pSession, userEntity);
+        dbHelper.saveSession(pSession, userEntity, sessionUUID);
         return sessionUUID;
     }
 }

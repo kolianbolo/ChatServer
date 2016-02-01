@@ -1,10 +1,12 @@
 package ru.bolobanov.chatserver.services;
 
+import org.hibernate.Session;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import ru.bolobanov.chatserver.ErrorMessages;
 import ru.bolobanov.chatserver.db.DBHelper;
+import ru.bolobanov.chatserver.db.HibernateUtil;
 import ru.bolobanov.chatserver.entities.mapping.MessageEntity;
 import ru.bolobanov.chatserver.entities.mapping.SessionEntity;
 import ru.bolobanov.chatserver.entities.request.ReceiveEntity;
@@ -29,6 +31,7 @@ public class SenderService {
     public Response send(ReceiveEntity receiveEntity) {
         JSONObject returned = new JSONObject();
         DBHelper dbHelper = new DBHelper();
+        Session session = HibernateUtil.getSessionFactory().openSession();
         try {
             if ((receiveEntity.getSession() == null)) {
                 returned.put(ErrorMessages.ERROR_CODE, ErrorMessages.INCORRECT_REQUEST);
@@ -36,14 +39,14 @@ public class SenderService {
                 return Response.status(200).entity(returned.toString()).build();
             }
 
-            SessionEntity sessionEntity = dbHelper.getSession(receiveEntity.getSession());
+            SessionEntity sessionEntity = dbHelper.getSession(session, receiveEntity.getSession());
             if (sessionEntity == null) {
                 returned.put(ErrorMessages.ERROR_CODE, ErrorMessages.BAD_SESSION);
                 returned.put(ErrorMessages.ERROR_MESSAGE, ErrorMessages.messages.get(ErrorMessages.BAD_SESSION));
                 return Response.status(200).entity(returned.toString()).build();
             }
-            List<MessageEntity> messagesList = dbHelper.getMessages(sessionEntity.getUserEntity());
-            dbHelper.updateStatus(messagesList, MessageEntity.STATUS_SENDED);
+            List<MessageEntity> messagesList = dbHelper.getMessages(session, sessionEntity.getUserEntity());
+            dbHelper.updateStatus(session, messagesList, MessageEntity.STATUS_SENDED);
             if (messagesList == null) {
                 returned.put(ErrorMessages.ERROR_CODE, ErrorMessages.UNEXPECTED_ERROR);
                 returned.put(ErrorMessages.ERROR_MESSAGE, ErrorMessages.messages.get(ErrorMessages.UNEXPECTED_ERROR));
@@ -63,6 +66,8 @@ public class SenderService {
             returned.put(ErrorMessages.ERROR_MESSAGE, "");
         } catch (JSONException e) {
             e.printStackTrace();
+        }finally{
+            session.close();
         }
         return Response.status(200).entity(returned.toString()).build();
 

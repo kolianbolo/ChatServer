@@ -12,7 +12,7 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 public class HibernateUtil {
     private static SessionFactory sessionFactory = buildSessionFactory();
 
-    protected static SessionFactory buildSessionFactory() {
+    private static SessionFactory buildSessionFactory() {
         final StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
                 .configure()
                 .build();
